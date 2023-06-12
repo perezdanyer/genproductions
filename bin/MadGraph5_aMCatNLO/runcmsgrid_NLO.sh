@@ -91,9 +91,12 @@ if [ -f ./Cards/madspin_card.dat ] ;then
 fi
 
 doreweighting=0
+checkreweighting=0
 if [ -f ./Cards/reweight_card.dat ]; then
     doreweighting=1
 fi
+
+checksystematics=1
 
 runname=cmsgrid
 
@@ -102,6 +105,8 @@ runname=cmsgrid
 
 #First check if normal operation with MG5_aMCatNLO events is planned
 if [ ! -e $LHEWORKDIR/header_for_madspin.txt ]; then
+
+    checksystematics=0
   
     cat runscript.dat | ./bin/generate_events -ox -n $runname
     runlabel=$runname
@@ -112,8 +117,11 @@ if [ ! -e $LHEWORKDIR/header_for_madspin.txt ]; then
         rwgt_dir="$LHEWORKDIR/process/rwgt"
         export PYTHONPATH=$rwgt_dir:$PYTHONPATH
         echo "0" | ./bin/aMCatNLO --debug reweight $runname
+        if [ "$( zgrep 'mg_reweighting' $LHEWORKDIR/process/Events/${runlabel}/events.lhe.gz | wc -l )" -eq "1" ] ; then
+            checkreweighting=1
+        fi
     fi
-    gzip -d $LHEWORKDIR/process/Events/${runlabel}/events.lhe 
+    gzip -d $LHEWORKDIR/process/Events/${runlabel}/events.lhe.gz 
 
     if [ "$domadspin" -gt "0" ] ; then
 	mv $LHEWORKDIR/process/Events/${runlabel}/events.lhe events.lhe
@@ -148,6 +156,10 @@ if [ ! -e $LHEWORKDIR/header_for_madspin.txt ]; then
 
     echo "systematics $runlabel --start_id=1001 --pdf=$pdfsets $scalevars" | ./bin/aMCatNLO
 
+    if [ "$( grep 'Central scale variation' $LHEWORKDIR/process/Events/${runlabel}/events.lhe | wc -l )" -eq "1" ] ; then
+        checksystematics=1
+    fi
+    
     cp $LHEWORKDIR/process/Events/${runlabel}/events.lhe $LHEWORKDIR/${runname}_final.lhe
 
 #else handle external tarball
@@ -201,7 +213,13 @@ mv ${LHEWORKDIR}/${runname}_final.lhe ${LHEWORKDIR}/test.lhe
 echo -e "\nRun xml check" 
 xmllint --stream --noout ${LHEWORKDIR}/test.lhe ; test $? -eq 0 || exit 1 
 echo "Number of weights that are NaN:" 
-grep  NaN  ${LHEWORKDIR}/test.lhe | grep "</wgt>" | wc -l ; test $? -eq 0 || exit 1 
+grep  NaN  ${LHEWORKDIR}/test.lhe | grep "</wgt>" | wc -l ; test $? -eq 0 || exit 1
+if [ "$doreweighting" -eq "1" ] ; then 
+    echo "Checking success of reweighting module ..."
+    test $checkreweighting -eq 1 || exit 1
+fi
+echo "Checking success of systematics module ..."
+test $checksystematics -eq 1 || exit 1 
 echo -e "All checks passed \n" 
 
 # copy output and print directory 

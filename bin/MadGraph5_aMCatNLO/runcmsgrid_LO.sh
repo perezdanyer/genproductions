@@ -141,6 +141,7 @@ zgrep \<event events.lhe.gz |wc -l
 
 #reweight if necessary
 doreweighting=0
+checkreweighting=0
 if [ -e ./madevent/Cards/reweight_card.dat ]; then
     echo "reweighting events"
     doreweighting=1
@@ -150,6 +151,9 @@ if [ -e ./madevent/Cards/reweight_card.dat ]; then
     echo "0" |./bin/madevent --debug reweight GridRun_${rnum}
     cd ..
     mv $LHEWORKDIR/process/madevent/Events/GridRun_${rnum}/unweighted_events.lhe.gz $LHEWORKDIR/process/events.lhe.gz
+    if [ "$( zgrep 'mg_reweighting' $LHEWORKDIR/process/events.lhe.gz | wc -l )" -eq "1" ] ; then
+        checkreweighting=1
+    fi
 fi
 
 gzip -d $LHEWORKDIR/process/events.lhe.gz
@@ -201,17 +205,27 @@ fi
 mv process/$event_file process/madevent/Events/${runlabel}/events.lhe
 
 # add scale and PDF weights using systematics module
+checksystematics=0
 pushd process/madevent
 pdfsets="PDF_SETS_REPLACE"
 scalevars="--mur=1,2,0.5 --muf=1,2,0.5 --together=muf,mur,dyn --dyn=-1,1,2,3,4 --alps=0.5,1,2"
 echo "systematics $runlabel --start_id=1001 --pdf=$pdfsets $scalevars" | ./bin/madevent
 popd
+if [ "$( grep 'Central scale variation' ${LHEWORKDIR}/process/madevent/Events/${runlabel}/events.lhe | wc -l )" -eq "1" ] ; then
+    checksystematics=1
+fi
 
 # check lhe output  
 echo -e "\nRun xml check" 
 xmllint --stream --noout ${LHEWORKDIR}/process/madevent/Events/${runlabel}/events.lhe ; test $? -eq 0 || exit 1 
 echo "Number of weights that are NaN:" 
 grep  NaN  ${LHEWORKDIR}/process/madevent/Events/${runlabel}/events.lhe | grep "</wgt>" | wc -l ; test $? -eq 0 || exit 1 
+if [ "$doreweighting" -eq "1" ] ; then 
+    echo "Checking success of reweighting module ..."
+    test $checkreweighting -eq 1 || exit 1
+fi
+echo "Checking success of systematics module ..."
+test $checksystematics -eq 1 || exit 1
 echo -e "All checks passed \n" 
 
 # copy output and print directory 
