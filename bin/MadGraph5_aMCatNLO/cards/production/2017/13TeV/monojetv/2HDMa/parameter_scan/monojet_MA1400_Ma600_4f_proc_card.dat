@@ -1,0 +1,5 @@
+import model Pseudoscalar_2HDM
+
+generate p p > j xd xd~ [QCD]
+
+output monojet_MA1400_Ma600_4f -nojpeg

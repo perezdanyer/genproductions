@@ -1,0 +1,13 @@
+import model DMsimp_s_spin0_5f_ybMSbar
+define p = g u c d s b u~ c~ d~ s~ b~
+define j = p
+define l+ = e+ mu+ ta+
+define l- = e- mu- ta-
+define vl = ve vm vt
+define vl~ = ve~ vm~ vt~
+define lept = l+ l- vl vl~
+
+generate p p > t w- Xd~ Xd /h QED=2
+add process p p > t~ w+ Xd~ Xd /h QED=2
+
+output DMPseudo_top_tWChan_Mchi1_Mphi300 -nojpeg

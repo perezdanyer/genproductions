@@ -1,0 +1,11 @@
+set group_subprocesses Auto
+set ignore_six_quark_processes False
+set loop_optimized_output True
+set gauge unitary
+set complex_mass_scheme False
+
+import model TRSM --modelname
+
+generate p p > h3 , (h3 > h1 h2, h1 > ta+ ta-, h2 > ta+ ta-)
+
+output GluGluToH3ToH1H2_H1ToTauTau_H2ToTauTau_MH3-125_MH1-6_MH2-12_TRSM_Non-Cascade -nojpeg

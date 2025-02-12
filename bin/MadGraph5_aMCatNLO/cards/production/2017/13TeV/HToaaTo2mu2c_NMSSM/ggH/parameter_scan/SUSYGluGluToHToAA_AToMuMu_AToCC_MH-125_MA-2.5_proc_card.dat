@@ -1,0 +1,11 @@
+set group_subprocesses Auto
+set ignore_six_quark_processes False
+set loop_optimized_output True
+set gauge unitary
+set complex_mass_scheme False
+
+import model NMSSMHET --modelname
+
+generate p p  > h01 , (h01 > a01 a01, a01 > c c~, a01 > mu+ mu-)
+
+output SUSYGluGluToHToAA_AToMuMu_AToCC_MH-125_MA-2.5 -nojpeg

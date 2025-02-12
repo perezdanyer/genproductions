@@ -1,0 +1,15 @@
+set param_card frblock 2 1.0
+set param_card frblock 3 1.0
+set param_card higgs 1 3.0
+set param_card higgs 2 3.0
+set param_card higgs 3 3.0
+set param_card higgs 5 0.35
+set param_card dminputs 1 1.0
+set param_card MASS 35 900
+set param_card MASS 36 900
+set param_card MASS 37 900
+set param_card MASS 55 500
+set param_card MASS 52 10
+set param_card DECAY 35 Auto
+set param_card DECAY 36 Auto
+set param_card DECAY 55 Auto

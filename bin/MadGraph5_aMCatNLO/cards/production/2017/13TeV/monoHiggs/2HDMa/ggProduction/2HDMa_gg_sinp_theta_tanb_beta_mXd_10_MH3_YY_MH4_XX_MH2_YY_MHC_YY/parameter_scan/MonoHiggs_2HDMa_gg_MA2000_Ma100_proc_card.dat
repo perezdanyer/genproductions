@@ -1,0 +1,6 @@
+import model Pseudoscalar_2HDM
+
+
+generate g g > xd xd~ h1 / z [QCD]
+output MonoHiggs_2HDMa_gg_MA2000_Ma100 -nojpeg
+
